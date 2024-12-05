@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Page</title>
+</head>
+<body>
+<h1>Make a Payment</h1>
+<input type="number" id="amount" placeholder="Enter amount in INR" required>
+<button id="pay-button">Pay Now</button>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    document.getElementById('pay-button').onclick = function() {
+        var amount = document.getElementById('amount').value * 100; // Convert to paise
+
+        fetch(`http://localhost:8080/api/razorpay/createOrder?amount=${amount}`)
+            .then(response => response.json())
+            .then(data => {
+                var options = {
+                    key: 'your_razorpay_key', // Enter the Key ID generated from the Razorpay Dashboard
+                    amount: data.amount, // Amount is in currency subunits
+                    currency: data.currency,
+                    name: 'Your Company Name',
+                    description: 'Test Transaction',
+                    order_id: data.id, // Use the ID returned from the server
+                    handler: function (response){
+                        alert('Payment Successful');
+                        // Optionally send response details to your backend for verification
+                    },
+                    prefill: {
+                        name: '',
+                        email: '',
+                        contact: ''
+                    },
+                    theme: {
+                        color: '#F37254'
+                    }
+                };
+                var rzp = new Razorpay(options);
+                rzp.open();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    };
+</script>
+</body>
+</html>
